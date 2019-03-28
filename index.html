@@ -28,8 +28,13 @@
         },
         {
           path: '/users',
-          component: {
-            template: '<div>users</div>',
+          component: UserList,
+          beforeEnter: function(to,from,next){
+            if(to.query.redirect === 'true'){
+              next('/top')
+            } else {
+              next()
+            }
           }
         },
         {
@@ -41,13 +46,6 @@
         }
       ],
     })
-    // router.beforeEach(function(to,from,next){
-    //   if(to.path === '/users'){
-    //     next('/top');
-    //   } else {
-    //     next();
-    //   }
-    // })
     let app = new Vue({
       router: router
     }).$mount('#app')
