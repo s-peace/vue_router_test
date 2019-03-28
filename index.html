@@ -11,6 +11,47 @@
 </head>
 
 <body>
+  <div id="app">
+    <router-link to="/top">top</router-link>
+    <router-link to="/users">users</router-link>
+    <router-link :to="{name:'user',params:{userId: 123}}">users description</router-link>
+    <router-view></router-view>
+  </div>
+  <script>
+    let router = new VueRouter({
+      routes: [
+        {
+          path: '/top',
+          component: {
+            template: '<div>top page </div>',
+          }
+        },
+        {
+          path: '/users',
+          component: {
+            template: '<div>users</div>',
+          }
+        },
+        {
+          path: '/user/:userId',
+          name: 'user',
+          component: {
+            template: '<div>user id is {{$route.params.userId}}</div>'
+          }
+        }
+      ],
+    })
+    // router.beforeEach(function(to,from,next){
+    //   if(to.path === '/users'){
+    //     next('/top');
+    //   } else {
+    //     next();
+    //   }
+    // })
+    let app = new Vue({
+      router: router
+    }).$mount('#app')
+  </script>
 </body>
 
 </html>
