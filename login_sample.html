@@ -19,10 +19,10 @@
       <router-link to="/top">top</router-link>
       <router-link to="/users">users</router-link>
       <router-link to="/users/new?redirect=true">regist new user</router-link>
-      <!-- <router-link to="/login" v-show></router-link>
-      <router-link to="/logout"></router-link> -->
-      <router-view></router-view>
+      <router-link to="/login" v-show="!Auth.loggedIn()">login</router-link>
+      <router-link to="/logout" v-show="Auth.loggedIn()">logout</router-link>
     </nav>
+      <router-view></router-view>
   </div>
 
   <script src="https://unpkg.com/vue@2.5.17"></script>
@@ -57,28 +57,69 @@
 
   <!-- UserCreate-template -->
   <script type="text/x-template" id="user-create">
-<div>
-  <div class="sending" v-if="sending">Sending...</div>
-  <div>
-    <h2>Create new user</h2>
     <div>
-      <label for="">name:</label>
-      <input type="text" v-model="user.name">
+      <div class="sending" v-if="sending">Sending...</div>
+      <div>
+        <h2>Create new user</h2>
+        <div>
+          <label for="">name:</label>
+          <input type="text" v-model="user.name">
+        </div>
+        <div>
+          <label for="">description:</label>
+          <textarea v-model="user.description" id="" cols="30" rows="10"></textarea>
+        </div>
+        <div class="error" v-if="error">
+          {{error}}
+        </div>
+        <div>
+          <input type="button" @click="createUser" value="send">
+        </div>
+      </div>
     </div>
-    <div>
-      <label for="">description:</label>
-      <textarea v-model="user.description" id="" cols="30" rows="10"></textarea>
-    </div>
-    <div class="error" v-if="error">
-      {{error}}
-    </div>
-    <div>
-      <input type="button" @click="createUser" value="send">
-    </div>
-  </div>
-</div>
   </script>
+  
+  <!-- Login-template -->
+  <script type="text/x-template" id="login">
+    <div>
+      <h2>Login</h2>
+      <p v-if="$route.query.redirect">
+        plz login
+      </p>
+      <form @submit.prevent="login">
+        <label for="">
+          <input v-model="email" placeholder="email">
+        </label>
+        <label for="">
+          <input v-model="pass" placeholder="password" type="password">
+        </label>
+        <br>
+        <button type="submit">login</button>
+        <p class="error "v-if="error">failed login</p>
+      </form>
+    </div>
+  </script>
+  
   <script>
+      //Auth
+      let Auth = {
+        login: function(email,pass,cb){
+          setTimeout(function(){
+            if(email === 'vue@example.com' && pass === 'vue'){
+              localStorage.token = Math.random().toString(36).substring(7)
+              if(cb) {cb(true)}
+            } else {
+              if(cb) {cb(false)}
+            }
+          },0)
+        },
+        logout: function(){
+          delete localStorage.token
+        },
+        loggedIn: function(){
+          return !!localStorage.token
+        }
+      }
     // dammyData
     let userData = [
       {
@@ -106,8 +147,38 @@
         callback(null,filteredUsers && filteredUsers[0])
       },1000)
     }
+    let postUser = function(params,callback){
+      setTimeout(function(){
+      params.id = userData.length + 1
+      userData.push(params)
+      callback(null,params)
+      },1000)
+    }
+    
 
     // components
+    //// Login
+    let Login = {
+      template: '#login',
+      data: function () {
+        return {
+          email: 'vue@example.com',
+          pass: '',
+          error: false
+        }
+      },
+      methods: {
+        login: function () {
+          Auth.login(this.email, this.pass, (function (loggedIn) {
+            if (!loggedIn) {
+              this.error = true
+            } else {
+              this.$router.replace(this.$route.query.redirect || '/')
+            }
+          }).bind(this))
+        }
+      }
+    }
     //// UserList
     let UserList = {
       template: '#user-list',
@@ -170,15 +241,6 @@
       }
     }
 
-    //// PostUser
-    let postUser = function(params,callback){
-      setTimeout(function(){
-      params.id = userData.length + 1
-      userData.push(params)
-      callback(null,params)
-      },1000)
-    }
-    
     //// UserCreate
     let UserCreate = {
       template: '#user-create',
@@ -220,25 +282,6 @@
       }
     }
 
-    // let Auth = {
-    //   login: function(email,pass,cb){
-    //     setTimeout(function(){
-    //       if(email === 'vue@example.com' && pass === 'vue'){
-    //         localStorage.token = Math.random().toString(36).substring(7)
-    //         if(cb) {cb(true)}
-    //       } else {
-    //         if(cb) {cb(false)}
-    //       }
-    //     },0)
-    //   },
-    //   logout: function(){
-    //     delete localStorage.token
-    //   },
-    //   loggedIn: function(){
-    //     return !!localStorage.token
-    //   }
-    // }
-
     // setting router
     let router = new VueRouter({
       routes: [
@@ -255,35 +298,42 @@
         {
           path: '/users/new',
           component: UserCreate,
-        //   beforeEnter: function(to,from,next){
-        //     if(!Auth.loggedIn()){
-        //       next({
-        //         path: '/login',
-        //         query: {redirect: to.fullPath}
-        //       })
-        //     } else {
-        //       next()
-        //     }
-        //   }
+          beforeEnter: function(to,from,next){
+            if(!Auth.loggedIn()){
+              next({
+                path: '/login',
+                query: {redirect: to.fullPath}
+              })
+            } else {
+              next()
+            }
+          }
         },
         {
           path: '/users/:userId',
           component: UserDetail,
         },
-        // {
-        //   path: '/login',
-        //   component: Login
-        // },
-        // {
-        //   path: '/logout',
-        //   beforeEnter: function(to,from,next){
-        //     Auth.logout()
-        //     next('/')
-        //   }
-        // }
+        {
+          path: '/login',
+          component: Login
+        },
+        {
+          path: '/logout',
+          beforeEnter: function(to,from,next){
+            Auth.logout()
+            next('/')
+          }
+        },
+        {
+          path: '*',
+          redirect: '/top'
+        }
       ],
     })
     let app = new Vue({
+      data: {
+        Auth: Auth
+      },
       router: router
     }).$mount('#app')
   </script>
