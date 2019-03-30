@@ -13,6 +13,9 @@
     <nav>
       <router-link to="/top">top</router-link>
       <router-link to="/users">users</router-link>
+      <!-- <router-link to="/users/new?redirect=true">regist new user</router-link> -->
+      <!-- <router-link to="/login" v-show></router-link>
+      <router-link to="/logout"></router-link> -->
       <router-view></router-view>
     </nav>
   </div>
@@ -30,28 +33,31 @@
     </div>
   </script>
   <script>
-    
+    ////// send back JSON
     let getUsers = function(callback){
       setTimeout(function(){
         callback(null,[
           {
             id: 1,
-            name: 'a a'
+            name: 'a a',  
+            description: 'aaa'
           },
           {
             id: 2,
-            name: 'b b'
+            name: 'b b',
+            description: 'bbb'
           }
         ])
       },1000)
     }
+    ////// UserList
     let UserList = {
       template: '#user-list',
       data: function(){
         return {
           loading: false,
           users: function(){return []},
-          error: null
+          error: null,
         }
       },
       created: function(){
@@ -62,10 +68,9 @@
       },
       methods: {
         fetchData: function(){
-          this.loading = true;
+          this.loading = true
           getUsers((function(err,users){
-            this.loading = false
-            if (err){
+            if(err) {
               this.error = err.toString()
             } else {
               this.users = users
@@ -74,6 +79,112 @@
         }
       }
     }
+    // let getUser = function(userId,callback){
+    //   setTimeout(function(){
+    //     let filteredUsers = userData.filter(function(user){
+    //       return user.id === paserInt(userid,10)
+    //     })
+    //     callback(null,filteredUsers && filteredUsers[0])
+    //   },1000)
+    // }
+
+    // let UserDetail = {
+    //   template: '#user-detail',
+    //   data: function(){
+    //     return {
+    //       loading: false,
+    //       user: null,
+    //       error: null
+    //     }
+    //   },
+    //   created: function(){
+    //     this.fetchData()
+    //   },
+    //   watch: {
+    //     '$route': 'fetchData'
+    //   },
+    //   methods: {
+    //     fetchData: function(){
+    //       this.loading = true;
+    //       getUsers(this.$route.params.userId,(function(err,users){
+    //         this.loading = false
+    //         if (err){
+    //           this.error = err.toString()
+    //         } else {
+    //           this.users = users
+    //         }
+    //       }).bind(this))
+    //     }
+    //   }
+    // }
+
+    // let postUser = function(params,callback){
+    //   setTimeout(function(){
+    //   params.id = userData.lenght + 1
+    //   userData.push(params)
+    //   callback(null,params)
+    //   },1000)
+    // }
+
+    // let UserCreate = {
+    //   template: '#user-create',
+    //   data: function(){
+    //     return {
+    //       sending: false,
+    //       user: this.defaultUser(),
+    //       error: null,
+    //     }
+    //   },
+    //   created: function(){
+    //   },
+    //   methods: {
+    //     defaultUser: function(){
+    //       return {
+    //         name: '',
+    //         description: '',
+    //       }
+    //     },
+    //     createUser: function(){
+    //       if(this.user.name.trim() === ''){
+    //         this.error = 'u need name'
+    //         return
+    //       }
+    //       if(this.user.description.trim() === ''){
+    //         this.error = 'u need description'
+    //         return
+    //       }
+    //       postUser(this.user,(function(err,user){
+    //         this.sending = false
+    //         if(err){
+    //           this.error = this.defaultUser()
+    //           alert('new user is registreted')
+    //           this.$router.push('/users')
+    //         }
+    //       }).bind(this))
+    //     }
+    //   }
+    // }
+
+    // let Auth = {
+    //   login: function(email,pass,cb){
+    //     setTimeout(function(){
+    //       if(email === 'vue@example.com' && pass === 'vue'){
+    //         localStorage.token = Math.random().toString(36).substring(7)
+    //         if(cb) {cb(true)}
+    //       } else {
+    //         if(cb) {cb(false)}
+    //       }
+    //     },0)
+    //   },
+    //   logout: function(){
+    //     delete localStorage.token
+    //   },
+    //   loggedIn: function(){
+    //     return !!localStorage.token
+    //   }
+    // }
+
+    ////// setting router
     let router = new VueRouter({
       routes: [
         {
@@ -86,6 +197,35 @@
           path: '/users',
           component: UserList,
         },
+        // {
+        //   path: '/users/new',
+        //   component: UserCreate,
+        //   beforeEnter: function(to,from,next){
+        //     if(!Auth.loggedIn()){
+        //       next({
+        //         path: '/login',
+        //         query: {redirect: to.fullPath}
+        //       })
+        //     } else {
+        //       next()
+        //     }
+        //   }
+        // },
+        // {
+        //   path: '/users/:userId',
+        //   component: UserDetail,
+        // },
+        // {
+        //   path: '/login',
+        //   component: Login
+        // },
+        // {
+        //   path: '/logout',
+        //   beforeEnter: function(to,from,next){
+        //     Auth.logout()
+        //     next('/')
+        //   }
+        // }
       ],
     })
     let app = new Vue({
