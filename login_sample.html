@@ -6,11 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
+  <style>
+    [v-cloak] {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
   <div id="app">
-    <nav>
+    <nav v-cloak>
       <router-link to="/top">top</router-link>
       <router-link to="/users">users</router-link>
       <!-- <router-link to="/users/new?redirect=true">regist new user</router-link> -->
@@ -23,31 +28,39 @@
   <script src="https://unpkg.com/vue@2.5.17"></script>
   <script src="https://unpkg.com/vue-router@3.0.1"></script>
   
+  <!-- UserList-template -->
   <script type="text/x-template" id="user-list">
     <div>
       <div class="loading" v-if="loading">loading...</div>
       <div if="error" class="error">{{error}}</div>
       <div v-for="user in users" :key="user.id">
-        <h2>{{user.name}}</h2>
+        <router-link to="{path: '/users/' + user.id}">
+          {{user.name}}
+        </router-link>
       </div>
     </div>
   </script>
+
+  <!-- UserDetail-template -->
+  <script type="text/x-template" id="user-detail">
+    <div>
+      <div class="loading" v-if="loading">loading2...</div>
+      <div class="error" v-if="error">
+        {{error}}
+      </div>
+      <div v-if="user">
+        <h2>{{user.name}}</h2>
+        <p>{{user.description}}</p>
+      </div>
+    </div>
+  </script>
+
   <script>
+    //////// dammyData
     ////// send back JSON
     let getUsers = function(callback){
       setTimeout(function(){
-        callback(null,[
-          {
-            id: 1,
-            name: 'a a',  
-            description: 'aaa'
-          },
-          {
-            id: 2,
-            name: 'b b',
-            description: 'bbb'
-          }
-        ])
+        callback(null,UserData)
       },1000)
     }
     ////// UserList
@@ -79,44 +92,61 @@
         }
       }
     }
-    // let getUser = function(userId,callback){
-    //   setTimeout(function(){
-    //     let filteredUsers = userData.filter(function(user){
-    //       return user.id === paserInt(userid,10)
-    //     })
-    //     callback(null,filteredUsers && filteredUsers[0])
-    //   },1000)
-    // }
+    ////// UserData
+    let UserData = [
+      {
+        id: 1,
+        name: 'aa aa',
+        description: 'bb bb',
+      },
+      {
+        id: 2,
+        name: 'cc cc',
+        description: 'dd dd',
+      },
+    ]
 
-    // let UserDetail = {
-    //   template: '#user-detail',
-    //   data: function(){
-    //     return {
-    //       loading: false,
-    //       user: null,
-    //       error: null
-    //     }
-    //   },
-    //   created: function(){
-    //     this.fetchData()
-    //   },
-    //   watch: {
-    //     '$route': 'fetchData'
-    //   },
-    //   methods: {
-    //     fetchData: function(){
-    //       this.loading = true;
-    //       getUsers(this.$route.params.userId,(function(err,users){
-    //         this.loading = false
-    //         if (err){
-    //           this.error = err.toString()
-    //         } else {
-    //           this.users = users
-    //         }
-    //       }).bind(this))
-    //     }
-    //   }
-    // }
+    ////// fakeAPI
+    let getUser = function(userId,callback){
+      setTimeout(function(){
+        let filteredUsers = UserData.filter(function(user){
+          return user.id === parseInt(userId,10)
+        })
+        callback(null,filteredUsers && filteredUsers[0])
+      },1000)
+    }
+
+    ////// UserDetail
+    let UserDetail = {
+      template: '#user-detail',
+      data: function(){
+        return {
+          loading: false,
+          user: null,
+          error: null
+        }
+      },
+      created: function(){
+        this.fetchData()
+      },
+      watch: {
+        '$route': 'fetchData'
+      },
+      methods: {
+        fetchData: function(){
+          this.loading = true;
+          getUser(this.$route.params.userId,
+          (function(err,user){
+            this.loading = false
+            if (err){
+              this.error = err.toString()
+            } else {
+              this.user = user
+            }
+          }).bind(this))
+        }
+      }
+    }
 
     // let postUser = function(params,callback){
     //   setTimeout(function(){
@@ -211,10 +241,10 @@
         //     }
         //   }
         // },
-        // {
-        //   path: '/users/:userId',
-        //   component: UserDetail,
-        // },
+        {
+          path: '/users/:userId',
+          component: UserDetail,
+        },
         // {
         //   path: '/login',
         //   component: Login
